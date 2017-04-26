@@ -36,6 +36,8 @@ if (DEBUG_ENABLED)
     message(STATUS "Enabling debug output")
 endif (DEBUG_ENABLED)
 
+add_definitions(${QT_DEBUG})
+
 configure_file(src/config.h.in ${CMAKE_BINARY_DIR}/src/config.h)
 
 include_directories(
