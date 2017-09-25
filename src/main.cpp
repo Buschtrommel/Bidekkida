@@ -45,8 +45,8 @@ int main(int argc, char *argv[])
     QCoreApplication app(argc, argv);
     catchUnixSignals({SIGQUIT, SIGINT, SIGTERM, SIGHUP});
 
-    app.setOrganizationName(QStringLiteral("Buschtrommel"));
-    app.setOrganizationDomain(QStringLiteral("buschmann23.de"));
+    app.setOrganizationName(QStringLiteral("Huessenbergnetz"));
+    app.setOrganizationDomain(QStringLiteral("huessenbergnetz.de"));
     app.setApplicationName(QStringLiteral("bidekkida"));
     app.setApplicationVersion(QStringLiteral(BIDEKKIDA_VERSION));
 
