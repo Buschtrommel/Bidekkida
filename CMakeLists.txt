@@ -1,11 +1,7 @@
-project(bidekkida)
-
 cmake_minimum_required(VERSION 3.1.0 FATAL_ERROR)
+cmake_policy(SET CMP0048 NEW)
 
-set(BIDEKKIDA_VERSION_MAJOR "0")
-set(BIDEKKIDA_VERSION_MINOR "1")
-set(BIDEKKIDA_VERSION_PATCH "0")
-set(BIDEKKIDA_VERSION "${BIDEKKIDA_VERSION_MAJOR}.${BIDEKKIDA_VERSION_MINOR}.${BIDEKKIDA_VERSION_PATCH}")
+project(bidekkida VERSION 1.0.0 LANGUAGES C CXX)
 
 find_package(Qt5 5.5.0 COMPONENTS Core REQUIRED)
 
@@ -30,11 +26,10 @@ set (CMAKE_CXX_STANDARD 11)
 set (CMAKE_CXX_FLAGS_DEBUG "-Werror -Wall -Wcast-align -Wno-uninitialized -Wempty-body -Wformat-security -Wformat -Winit-self -fsanitize=address -ggdb")
 
 set (QT_DEBUG "-DQT_NO_DEBUG -DQT_NO_DEBUG_OUTPUT")
-option (DEBUG_ENABLED "Enabling debug output" OFF)
-if (DEBUG_ENABLED)
+if (${CMAKE_BUILD_TYPE} STREQUAL "Debug")
     set (QT_DEBUG "-DQT_DEBUG")
     message(STATUS "Enabling debug output")
-endif (DEBUG_ENABLED)
+endif(${CMAKE_BUILD_TYPE} STREQUAL "Debug")
 
 add_definitions(${QT_DEBUG})
 
