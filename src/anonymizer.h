@@ -23,6 +23,7 @@
 #include <QRegularExpression>
 #include <QFile>
 #include <QObject>
+#include <QMap>
 
 extern "C" {
 #include <syslog.h>
@@ -60,6 +61,8 @@ public:
     void setBackend(Backend backend);
     void setIdentifier(const QString &identifier);
     void setPriority(Priority priority);
+    void setPriorityRegex(const QString &regex);
+    void setPriorityMap(const QString &prios);
 
 private slots:
     void dataAvailable();
@@ -70,9 +73,13 @@ private:
     QSocketNotifier *m_notifier = nullptr;
     QTextStream m_outStream;
     QRegularExpression m_ipregex;
+    QRegularExpression m_prioregex;
     Backend m_backend = File;
     QString m_identifier;
     Priority m_priority = Informational;
+    QMap<QString,int> m_prioMap;
+    bool m_anonymizeIp = false;
+    bool m_extractPrio = false;
 };
 
 #endif // ANONYMIZER_H

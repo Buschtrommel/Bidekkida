@@ -35,8 +35,9 @@ extern "C"
 Anonymizer::Anonymizer(const QString &outputFileName, const QString &ipregex, QObject *parent) :
     QObject(parent)
 {
-    if (!ipregex.isEmpty()) {
-        m_ipregex.setPattern(ipregex);
+    m_ipregex.setPattern(ipregex);
+    if (!ipregex.isEmpty() && m_ipregex.isValid()) {
+        m_anonymizeIp = true;
     }
     m_outputFile.setFileName(outputFileName);
 }
@@ -100,7 +101,7 @@ void Anonymizer::dataAvailable()
 {
     QString s = QString::fromUtf8(m_stdin.readLine());
 
-    if (!m_ipregex.pattern().isEmpty()) {
+    if (m_anonymizeIp) {
         const QRegularExpressionMatch match = m_ipregex.match(s);
         if (Q_LIKELY(match.hasMatch())) {
             const QString origAddress = match.captured(1);
@@ -124,13 +125,23 @@ void Anonymizer::dataAvailable()
         }
     }
 
+    int _prio = static_cast<int>(m_priority);
+
+    if (m_extractPrio) {
+        const QRegularExpressionMatch match = m_prioregex.match(s);
+        if (Q_LIKELY(match.hasMatch())) {
+            const QString prio = match.captured(1);
+            _prio = m_prioMap.value(prio, _prio);
+        }
+    }
+
     switch(m_backend) {
     case Syslog:
-        syslog(static_cast<int>(m_priority), "%s", qUtf8Printable(s));
+        syslog(_prio, "%s", qUtf8Printable(s));
         break;
 #ifdef WITH_SYSTEMD
     case Journal:
-        sd_journal_send(qUtf8Printable(QStringLiteral("MESSAGE=%1").arg(s)), qUtf8Printable(QStringLiteral("PRIORITY=%1").arg(static_cast<int>(m_priority))), qUtf8Printable(QStringLiteral("SYSLOG_IDENTIFIER=%1").arg(m_identifier)), qUtf8Printable(QStringLiteral("SYSLOG_FACILITY=%1").arg(LOG_DAEMON)), NULL);
+        sd_journal_send(qUtf8Printable(QStringLiteral("MESSAGE=%1").arg(s)), qUtf8Printable(QStringLiteral("PRIORITY=%1").arg(_prio)), qUtf8Printable(QStringLiteral("SYSLOG_IDENTIFIER=%1").arg(m_identifier)), qUtf8Printable(QStringLiteral("SYSLOG_FACILITY=%1").arg(LOG_DAEMON)), NULL);
         break;
 #endif
     case File:
@@ -157,4 +168,58 @@ void Anonymizer::setIdentifier(const QString &identifier)
 void Anonymizer::setPriority(Priority priority)
 {
     m_priority = priority;
+}
+
+
+void Anonymizer::setPriorityRegex(const QString &regex)
+{
+    m_prioregex.setPattern(regex);
+    if (!regex.isEmpty() && m_prioregex.isValid()) {
+        m_extractPrio = true;
+    }
+}
+
+
+void Anonymizer::setPriorityMap(const QString &prios)
+{
+    m_prioMap.clear();
+    if (!prios.isEmpty()) {
+        if (prios.contains(QLatin1Char(';'))) {
+            const QStringList _lst = prios.split(QLatin1Char(';'), QString::SkipEmptyParts);
+            if (!_lst.empty()) {
+                for (const QString &prio : _lst) {
+                    const int comma = prio.indexOf(QLatin1Char(','));
+                    if (comma > -1) {
+                        const QString _prioName = prio.left(comma);
+                        if (!_prioName.isEmpty()) {
+                            bool ok = false;
+                            const int _prioNumber = prio.midRef(comma + 1).toInt(&ok);
+                            if (ok) {
+                                m_prioMap.insert(_prioName, _prioNumber);
+                            }
+                        }
+                    }
+                }
+            }
+        } else if (prios == QLatin1String("apache")) {
+            m_prioMap = QMap<QString,int>({
+                                              {QStringLiteral("emerg"), LOG_EMERG},
+                                              {QStringLiteral("alert"), LOG_ALERT},
+                                              {QStringLiteral("crit"), LOG_CRIT},
+                                              {QStringLiteral("error"), LOG_ERR},
+                                              {QStringLiteral("warn"), LOG_WARNING},
+                                              {QStringLiteral("notice"), LOG_NOTICE},
+                                              {QStringLiteral("info"), LOG_INFO},
+                                              {QStringLiteral("debug"), LOG_DEBUG},
+                                              {QStringLiteral("trace1"), LOG_DEBUG},
+                                              {QStringLiteral("trace2"), LOG_DEBUG},
+                                              {QStringLiteral("trace3"), LOG_DEBUG},
+                                              {QStringLiteral("trace4"), LOG_DEBUG},
+                                              {QStringLiteral("trace5"), LOG_DEBUG},
+                                              {QStringLiteral("trace6"), LOG_DEBUG},
+                                              {QStringLiteral("trace7"), LOG_DEBUG},
+                                              {QStringLiteral("trace8"), LOG_DEBUG},
+                                          });
+        }
+    }
 }

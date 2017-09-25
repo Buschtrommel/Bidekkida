@@ -57,6 +57,7 @@ int main(int argc, char *argv[])
     settings->beginGroup(group);
     const QString logFileName = settings->value(QStringLiteral("logfile"), QStringLiteral("/var/log/apache2/access_log")).toString();
     const QString ipregex = settings->value(QStringLiteral("ipregex")).toString();
+    const QString priorityregex = settings->value(QStringLiteral("priorityregex")).toString();
 
     const QString _backend = settings->value(QStringLiteral("backend"), QStringLiteral("file")).toString();
     Anonymizer::Backend backend = Anonymizer::File;
@@ -100,6 +101,7 @@ int main(int argc, char *argv[])
     anon.setBackend(backend);
     anon.setIdentifier(identifier);
     anon.setPriority(priority);
+    anon.setPriorityRegex(priorityregex);
     if (!anon.run()) {
         return 2;
     }
