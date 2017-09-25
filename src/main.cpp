@@ -52,22 +52,35 @@ int main(int argc, char *argv[])
 
     QSettings *settings = new QSettings(QStringLiteral(BIDEKKIDA_CONFDIR) + QLatin1String("/bidekkida.conf"), QSettings::IniFormat);
 
-    settings->beginGroup(QStringLiteral("default"));
-    QString logFileName = settings->value(QStringLiteral("logfile"), QStringLiteral("/var/log/apache2/access_log")).toString();
-    QString regex = settings->value(QStringLiteral("regex"), QStringLiteral("^([a-f0-9:\\.]{3,39})\\s.*")).toString();
-    settings->endGroup();
+    const QString group = (argc > 1) ? QString::fromLatin1(argv[1]) : QStringLiteral("default");
 
-    if (argc > 1) {
-        const QString group(argv[1]);
-        settings->beginGroup(group);
-        logFileName = settings->value(QStringLiteral("logfile"), logFileName).toString();
-        regex = settings->value(QStringLiteral("regex"), regex).toString();
-        settings->endGroup();
+    settings->beginGroup(group);
+    const QString logFileName = settings->value(QStringLiteral("logfile"), QStringLiteral("/var/log/apache2/access_log")).toString();
+    const QString regex = settings->value(QStringLiteral("regex"), QStringLiteral("^([a-f0-9:\\.]{3,39})\\s.*")).toString();
+
+    const QString _backend = settings->value(QStringLiteral("backend"), QStringLiteral("file")).toString();
+        Anonymizer::Backend backend;
+    if (_backend == QLatin1String("syslog")) {
+        backend = Anonymizer::Syslog;
+#ifdef WITH_SYSTEMD
+    } else if (_backend == QLatin1String("journal")) {
+        backend = Anonymizer::Journal;
+#endif
+    } else {
+        backend = Anonymizer::File;
     }
+
+    const QString identifier = settings->value(QStringLiteral("identifier"), QCoreApplication::applicationName()).toString();
+    const bool anonymizeIp = settings->value(QStringLiteral("anonymize"), true).toBool();
+
+    settings->endGroup();
 
     delete settings;
 
     Anonymizer anon(logFileName, regex);
+    anon.setBackend(backend);
+    anon.setIdentifier(identifier);
+    anon.setAnonymizeIp(anonymizeIp);
     if (!anon.run()) {
         return 2;
     }

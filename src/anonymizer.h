@@ -19,32 +19,62 @@
 #ifndef ANONYMIZER_H
 #define ANONYMIZER_H
 
-#include <QObject>
 #include <QTextStream>
 #include <QRegularExpression>
+#include <QFile>
+#include <QObject>
+
+extern "C" {
+#include <syslog.h>
+}
 
 class QSocketNotifier;
-class QFile;
 
 class Anonymizer : public QObject
 {
     Q_OBJECT
 public:
-    Anonymizer(const QString &outputFileName, const QString &regex, QObject *parent = nullptr);
+    Anonymizer(const QString &outputFileName, const QString &regex, QObject* parent = nullptr);
+
+    enum Backend {
+        File = 0,
+        Syslog = 1,
+        Journal = 2
+    };
+
+    enum Priority {
+        Emergerncy = LOG_EMERG,
+        Alert = LOG_ALERT,
+        Critical = LOG_CRIT,
+        Error = LOG_ERR,
+        Warning = LOG_WARNING,
+        Notice = LOG_NOTICE,
+        Informational = LOG_INFO,
+        Debug = LOG_DEBUG
+    };
 
     ~Anonymizer();
 
     bool run();
 
+    void setBackend(Backend backend);
+    void setAnonymizeIp(bool anonymize);
+    void setIdentifier(const QString &identifier);
+    void setPriority(Priority priority);
+
 private slots:
     void dataAvailable();
 
 private:
-    QFile *m_stdin;
-    QFile *m_outputFile;
-    QSocketNotifier *m_notifier;
+    QFile m_stdin;
+    QFile m_outputFile;
+    QSocketNotifier *m_notifier = nullptr;
     QTextStream m_outStream;
     QRegularExpression m_regex;
+    Backend m_backend = File;
+    bool m_anonymizeIp = true;
+    QString m_identifier;
+    Priority m_priority = Informational;
 };
 
 #endif // ANONYMIZER_H
