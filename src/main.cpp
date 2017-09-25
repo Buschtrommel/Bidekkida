@@ -71,7 +71,7 @@ int main(int argc, char *argv[])
         backend = Anonymizer::File;
     }
 
-    const QString identifier = settings->value(QStringLiteral("identifier"), QCoreApplication::applicationName()).toString();
+    const QString identifier = settings->value(QStringLiteral("identifier"), group).toString();
 
     const QString _priority = settings->value(QStringLiteral("priority"), QStringLiteral("6")).toString();
     Anonymizer::Priority priority = Anonymizer::Informational;
