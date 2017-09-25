@@ -93,6 +93,8 @@ int main(int argc, char *argv[])
         priority = Anonymizer::Debug;
     }
 
+    const QString priorityMap = settings->value(QStringLiteral("prioritymap")).toString();
+
     settings->endGroup();
 
     delete settings;
@@ -102,6 +104,7 @@ int main(int argc, char *argv[])
     anon.setIdentifier(identifier);
     anon.setPriority(priority);
     anon.setPriorityRegex(priorityregex);
+    anon.setPriorityMap(priorityMap);
     if (!anon.run()) {
         return 2;
     }
