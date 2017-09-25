@@ -43,7 +43,7 @@ public:
     };
 
     enum Priority {
-        Emergerncy = LOG_EMERG,
+        Emergency = LOG_EMERG,
         Alert = LOG_ALERT,
         Critical = LOG_CRIT,
         Error = LOG_ERR,
