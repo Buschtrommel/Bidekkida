@@ -14,7 +14,7 @@ target_link_libraries(bidekkida
 
 find_package(PkgConfig QUIET)
 if (PKG_CONFIG_FOUND)
-    pkg_check_modules(SYSTEMD QUIET systemd)
+    pkg_search_module(SYSTEMD QUIET systemd libsystemd)
     if (SYSTEMD_FOUND)
         message(STATUS "Found systemd version ${SYSTEMD_VERSION}. Enabling systemd journal support.")
         add_definitions("-DWITH_SYSTEMD")
