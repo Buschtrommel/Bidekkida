@@ -128,7 +128,7 @@ void Anonymizer::dataAvailable()
         break;
 #ifdef WITH_SYSTEMD
     case Journal:
-        sd_journal_send(qUtf8Printable(QStringLiteral("MESSAGE=%1").arg(s)), qUtf8Printable(QStringLiteral("PRIORITY=%1").arg(m_priority)), qUtf8Printable(QStringLiteral("SYSLOG_IDENTIFIER=%1").arg(m_identifier)), qUtf8Printable(QStringLiteral("SYSLOG_FACILITY=%1").arg(LOG_DAEMON)), NULL);
+        sd_journal_send(qUtf8Printable(QStringLiteral("MESSAGE=%1").arg(s)), qUtf8Printable(QStringLiteral("PRIORITY=%1").arg(static_cast<int>(m_priority))), qUtf8Printable(QStringLiteral("SYSLOG_IDENTIFIER=%1").arg(m_identifier)), qUtf8Printable(QStringLiteral("SYSLOG_FACILITY=%1").arg(LOG_DAEMON)), NULL);
         break;
 #endif
     case File:
