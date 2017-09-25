@@ -34,7 +34,7 @@ class Anonymizer : public QObject
 {
     Q_OBJECT
 public:
-    Anonymizer(const QString &outputFileName, const QString &regex, QObject* parent = nullptr);
+    Anonymizer(const QString &outputFileName, const QString &ipregex, QObject* parent = nullptr);
 
     enum Backend {
         File = 0,
@@ -58,7 +58,6 @@ public:
     bool run();
 
     void setBackend(Backend backend);
-    void setAnonymizeIp(bool anonymize);
     void setIdentifier(const QString &identifier);
     void setPriority(Priority priority);
 
@@ -70,9 +69,8 @@ private:
     QFile m_outputFile;
     QSocketNotifier *m_notifier = nullptr;
     QTextStream m_outStream;
-    QRegularExpression m_regex;
+    QRegularExpression m_ipregex;
     Backend m_backend = File;
-    bool m_anonymizeIp = true;
     QString m_identifier;
     Priority m_priority = Informational;
 };

@@ -32,10 +32,12 @@ extern "C"
 #endif
 }
 
-Anonymizer::Anonymizer(const QString &outputFileName, const QString &regex, QObject *parent) :
+Anonymizer::Anonymizer(const QString &outputFileName, const QString &ipregex, QObject *parent) :
     QObject(parent)
 {
-    m_regex.setPattern(regex);
+    if (!ipregex.isEmpty()) {
+        m_ipregex.setPattern(ipregex);
+    }
     m_outputFile.setFileName(outputFileName);
 }
 
@@ -98,8 +100,8 @@ void Anonymizer::dataAvailable()
 {
     QString s = QString::fromUtf8(m_stdin.readLine());
 
-    if (m_anonymizeIp) {
-        const QRegularExpressionMatch match = m_regex.match(s);
+    if (!m_ipregex.pattern().isEmpty()) {
+        const QRegularExpressionMatch match = m_ipregex.match(s);
         if (Q_LIKELY(match.hasMatch())) {
             const QString origAddress = match.captured(1);
             QString cloakedAddress;
@@ -143,12 +145,6 @@ void Anonymizer::dataAvailable()
 void Anonymizer::setBackend(Backend backend)
 {
     m_backend = backend;
-}
-
-
-void Anonymizer::setAnonymizeIp(bool anonymize)
-{
-    m_anonymizeIp = anonymize;
 }
 
 

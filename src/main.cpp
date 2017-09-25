@@ -56,7 +56,7 @@ int main(int argc, char *argv[])
 
     settings->beginGroup(group);
     const QString logFileName = settings->value(QStringLiteral("logfile"), QStringLiteral("/var/log/apache2/access_log")).toString();
-    const QString regex = settings->value(QStringLiteral("regex"), QStringLiteral("^([a-f0-9:\\.]{3,39})\\s.*")).toString();
+    const QString ipregex = settings->value(QStringLiteral("ipregex")).toString();
 
     const QString _backend = settings->value(QStringLiteral("backend"), QStringLiteral("file")).toString();
     Anonymizer::Backend backend = Anonymizer::File;
@@ -71,7 +71,6 @@ int main(int argc, char *argv[])
     }
 
     const QString identifier = settings->value(QStringLiteral("identifier"), QCoreApplication::applicationName()).toString();
-    const bool anonymizeIp = settings->value(QStringLiteral("anonymize"), true).toBool();
 
     const QString _priority = settings->value(QStringLiteral("priority"), QStringLiteral("6")).toString();
     Anonymizer::Priority priority = Anonymizer::Informational;
@@ -97,10 +96,9 @@ int main(int argc, char *argv[])
 
     delete settings;
 
-    Anonymizer anon(logFileName, regex);
+    Anonymizer anon(logFileName, ipregex);
     anon.setBackend(backend);
     anon.setIdentifier(identifier);
-    anon.setAnonymizeIp(anonymizeIp);
     anon.setPriority(priority);
     if (!anon.run()) {
         return 2;
