@@ -52,50 +52,30 @@ int main(int argc, char *argv[])
 
     QSettings *settings = new QSettings(QStringLiteral(BIDEKKIDA_CONFDIR) + QLatin1String("/bidekkida.conf"), QSettings::IniFormat);
 
-    const QString group = (argc > 1) ? QString::fromLatin1(argv[1]) : QStringLiteral("default");
-
-    settings->beginGroup(group);
-    const QString logFileName = settings->value(QStringLiteral("logfile"), QStringLiteral("/var/log/apache2/access_log")).toString();
-    const QString ipregex = settings->value(QStringLiteral("ipregex")).toString();
-    const QString priorityregex = settings->value(QStringLiteral("priorityregex")).toString();
-
-    const QString _backend = settings->value(QStringLiteral("backend"), QStringLiteral("file")).toString();
-    Anonymizer::Backend backend = Anonymizer::File;
-    if (_backend == QLatin1String("syslog")) {
-        backend = Anonymizer::Syslog;
-#ifdef WITH_SYSTEMD
-    } else if (_backend == QLatin1String("journal")) {
-        backend = Anonymizer::Journal;
-#endif
-    } else {
-        backend = Anonymizer::File;
-    }
-
-    const QString identifier = settings->value(QStringLiteral("identifier"), group).toString();
-
-    const QString _priority = settings->value(QStringLiteral("priority"), QStringLiteral("6")).toString();
-    Anonymizer::Priority priority = Anonymizer::Informational;
-    if ((_priority == QLatin1String("0")) || (QString::compare(_priority, QLatin1String("emergency"), Qt::CaseInsensitive) == 0)) {
-        priority = Anonymizer::Emergency;
-    } else if ((_priority == QLatin1String("1")) || (QString::compare(_priority, QLatin1String("alert"), Qt::CaseInsensitive) == 0)) {
-        priority = Anonymizer::Alert;
-    } else if ((_priority == QLatin1String("2")) || (QString::compare(_priority, QLatin1String("critical"), Qt::CaseInsensitive) == 0)) {
-        priority = Anonymizer::Critical;
-    } else if ((_priority == QLatin1String("3")) || (QString::compare(_priority, QLatin1String("error"), Qt::CaseInsensitive) == 0)) {
-        priority = Anonymizer::Error;
-    } else if ((_priority == QLatin1String("4")) || (QString::compare(_priority, QLatin1String("warning"), Qt::CaseInsensitive) == 0)) {
-        priority = Anonymizer::Warning;
-    } else if ((_priority == QLatin1String("5")) || (QString::compare(_priority, QLatin1String("notice"), Qt::CaseInsensitive) == 0)) {
-        priority = Anonymizer::Notice;
-    } else if ((_priority == QLatin1String("6")) || (QString::compare(_priority, QLatin1String("informational"), Qt::CaseInsensitive) == 0)) {
-        priority = Anonymizer::Informational;
-    } else {
-        priority = Anonymizer::Debug;
-    }
-
-    const QString priorityMap = settings->value(QStringLiteral("prioritymap")).toString();
-
+    settings->beginGroup(QStringLiteral("default"));
+    QString logFileName = settings->value(QStringLiteral("logfile"), QStringLiteral("/var/log/apache2/access_log")).toString();
+    QString ipregex = settings->value(QStringLiteral("ipregex")).toString();
+    QString priorityregex = settings->value(QStringLiteral("priorityregex")).toString();
+    QString backend = settings->value(QStringLiteral("backend"), QStringLiteral("file")).toString();
+    QString identifier = settings->value(QStringLiteral("identifier"), QCoreApplication::applicationName()).toString();
+    QString priority = settings->value(QStringLiteral("priority"), QStringLiteral("6")).toString();
+    QString priorityMap = settings->value(QStringLiteral("prioritymap")).toString();
     settings->endGroup();
+
+
+    if (argc > 1) {
+        const QString group = QString::fromUtf8(argv[1]);
+
+        settings->beginGroup(group);
+        logFileName = settings->value(QStringLiteral("logfile"), logFileName).toString();
+        ipregex = settings->value(QStringLiteral("ipregex"), ipregex).toString();
+        priorityregex = settings->value(QStringLiteral("priorityregex"), priorityregex).toString();
+        backend = settings->value(QStringLiteral("backend"), backend).toString();
+        identifier = settings->value(QStringLiteral("identifier"), group).toString();
+        priority = settings->value(QStringLiteral("priority"), priority).toString();
+        priorityMap = settings->value(QStringLiteral("prioritymap"), priorityMap).toString();
+        settings->endGroup();
+    }
 
     delete settings;
 

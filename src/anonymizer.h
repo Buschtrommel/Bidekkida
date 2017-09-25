@@ -59,8 +59,10 @@ public:
     bool run();
 
     void setBackend(Backend backend);
+    void setBackend(const QString &_backend);
     void setIdentifier(const QString &identifier);
     void setPriority(Priority priority);
+    void setPriority(const QString &_priority);
     void setPriorityRegex(const QString &regex);
     void setPriorityMap(const QString &prios);
 

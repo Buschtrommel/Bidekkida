@@ -160,6 +160,23 @@ void Anonymizer::setBackend(Backend backend)
 }
 
 
+void Anonymizer::setBackend(const QString &_backend)
+{
+    Anonymizer::Backend backend = Anonymizer::File;
+    if (_backend == QLatin1String("syslog")) {
+        backend = Anonymizer::Syslog;
+#ifdef WITH_SYSTEMD
+    } else if (_backend == QLatin1String("journal")) {
+        backend = Anonymizer::Journal;
+#endif
+    } else {
+        backend = Anonymizer::File;
+    }
+
+    setBackend(backend);
+}
+
+
 void Anonymizer::setIdentifier(const QString &identifier)
 {
     m_identifier = identifier;
@@ -169,6 +186,31 @@ void Anonymizer::setIdentifier(const QString &identifier)
 void Anonymizer::setPriority(Priority priority)
 {
     m_priority = priority;
+}
+
+
+void Anonymizer::setPriority(const QString &_priority)
+{
+    Anonymizer::Priority priority = Anonymizer::Informational;
+    if ((_priority == QLatin1String("0")) || (QString::compare(_priority, QLatin1String("emergency"), Qt::CaseInsensitive) == 0)) {
+        priority = Anonymizer::Emergency;
+    } else if ((_priority == QLatin1String("1")) || (QString::compare(_priority, QLatin1String("alert"), Qt::CaseInsensitive) == 0)) {
+        priority = Anonymizer::Alert;
+    } else if ((_priority == QLatin1String("2")) || (QString::compare(_priority, QLatin1String("critical"), Qt::CaseInsensitive) == 0)) {
+        priority = Anonymizer::Critical;
+    } else if ((_priority == QLatin1String("3")) || (QString::compare(_priority, QLatin1String("error"), Qt::CaseInsensitive) == 0)) {
+        priority = Anonymizer::Error;
+    } else if ((_priority == QLatin1String("4")) || (QString::compare(_priority, QLatin1String("warning"), Qt::CaseInsensitive) == 0)) {
+        priority = Anonymizer::Warning;
+    } else if ((_priority == QLatin1String("5")) || (QString::compare(_priority, QLatin1String("notice"), Qt::CaseInsensitive) == 0)) {
+        priority = Anonymizer::Notice;
+    } else if ((_priority == QLatin1String("6")) || (QString::compare(_priority, QLatin1String("informational"), Qt::CaseInsensitive) == 0)) {
+        priority = Anonymizer::Informational;
+    } else {
+        priority = Anonymizer::Debug;
+    }
+
+    setPriority(priority);
 }
 
 
