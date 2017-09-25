@@ -24,13 +24,13 @@
 #include <QStringRef>
 #include <QStringBuilder>
 
+#ifdef WITH_SYSTEMD
 extern "C"
 {
-#ifdef WITH_SYSTEMD
 #define SD_JOURNAL_SUPPRESS_LOCATION
 #include <systemd/sd-journal.h>
-#endif
 }
+#endif
 
 Anonymizer::Anonymizer(const QString &outputFileName, const QString &ipregex, QObject *parent) :
     QObject(parent)
@@ -38,6 +38,7 @@ Anonymizer::Anonymizer(const QString &outputFileName, const QString &ipregex, QO
     m_ipregex.setPattern(ipregex);
     if (!ipregex.isEmpty() && m_ipregex.isValid()) {
         m_anonymizeIp = true;
+        m_ipregex.optimize();
     }
     m_outputFile.setFileName(outputFileName);
 }
@@ -141,7 +142,7 @@ void Anonymizer::dataAvailable()
         break;
 #ifdef WITH_SYSTEMD
     case Journal:
-        sd_journal_send(qUtf8Printable(QStringLiteral("MESSAGE=%1").arg(s)), qUtf8Printable(QStringLiteral("PRIORITY=%1").arg(_prio)), qUtf8Printable(QStringLiteral("SYSLOG_IDENTIFIER=%1").arg(m_identifier)), qUtf8Printable(QStringLiteral("SYSLOG_FACILITY=%1").arg(LOG_DAEMON)), NULL);
+        sd_journal_send(qUtf8Printable(QStringLiteral("MESSAGE=%1").arg(s)), qUtf8Printable(QStringLiteral("PRIORITY=%1").arg(_prio)), qUtf8Printable(QStringLiteral("SYSLOG_IDENTIFIER=%1").arg(m_identifier)), qUtf8Printable(QStringLiteral("SYSLOG_FACILITY=%1").arg(LOG_FAC(LOG_DAEMON))), NULL);
         break;
 #endif
     case File:
@@ -176,6 +177,7 @@ void Anonymizer::setPriorityRegex(const QString &regex)
     m_prioregex.setPattern(regex);
     if (!regex.isEmpty() && m_prioregex.isValid()) {
         m_extractPrio = true;
+        m_prioregex.optimize();
     }
 }
 
